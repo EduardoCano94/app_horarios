@@ -22,18 +22,28 @@ class _LoginScreenState extends State<LoginScreen> {
       _error = null;
     });
 
-    final usuario = await DatabaseHelper.instance.login(_passCtrl.text.trim());
-
-    if (!mounted) return;
-    setState(() => _cargando = false);
-
-    if (usuario != null) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => HomeScreen(rol: usuario.rol)),
+    try {
+      final usuario = await DatabaseHelper.instance.login(
+        _passCtrl.text.trim(),
       );
-    } else {
-      setState(() => _error = 'Contraseña incorrecta');
+
+      if (!mounted) return;
+      setState(() => _cargando = false);
+
+      if (usuario != null) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => HomeScreen(rol: usuario.rol)),
+        );
+      } else {
+        setState(() => _error = 'Contraseña incorrecta');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _cargando = false;
+        _error = 'Error: $e';
+      });
     }
   }
 
@@ -73,7 +83,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
               ),
               const SizedBox(height: 48),
-
               TextField(
                 controller: _passCtrl,
                 obscureText: !_verPassword,
@@ -100,7 +109,6 @@ class _LoginScreenState extends State<LoginScreen> {
                 onSubmitted: (_) => _iniciarSesion(),
               ),
               const SizedBox(height: 24),
-
               SizedBox(
                 width: double.infinity,
                 height: 50,

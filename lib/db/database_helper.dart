@@ -202,11 +202,6 @@ class DatabaseHelper {
       {'nombre': 'DULCE JOCELYN CIPRIANO', 'area': 'CHAMARRA'},
     ];
 
-    for (final op in operariosIniciales) {
-      await db.insert('operarios', op);
-    }
-
-    // ── Órdenes de corte iniciales ───────────────────────
     final ordenesIniciales = [
       {
         'numero_oc': '260261',
@@ -294,11 +289,6 @@ class DatabaseHelper {
       },
     ];
 
-    for (final orden in ordenesIniciales) {
-      await db.insert('ordenes_corte', orden);
-    }
-
-    // ── Usuarios iniciales ───────────────────────────────
     final usuariosIniciales = [
       {
         'nombre': 'Dueño',
@@ -317,9 +307,24 @@ class DatabaseHelper {
       },
     ];
 
-    for (final u in usuariosIniciales) {
-      await db.insert('usuarios', u);
-    }
+    // ── Inserción en batch (mucho más rápido) ────────────
+    await db.transaction((txn) async {
+      for (final op in operariosIniciales) {
+        await txn.insert('operarios', op);
+      }
+    });
+
+    await db.transaction((txn) async {
+      for (final orden in ordenesIniciales) {
+        await txn.insert('ordenes_corte', orden);
+      }
+    });
+
+    await db.transaction((txn) async {
+      for (final u in usuariosIniciales) {
+        await txn.insert('usuarios', u);
+      }
+    });
   }
 
   // ── USUARIOS ───────────────────────────────────────────
