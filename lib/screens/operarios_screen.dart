@@ -12,26 +12,11 @@ class OperariosScreen extends StatefulWidget {
 class _OperariosScreenState extends State<OperariosScreen> {
   List<Operario> _operarios = [];
   String _areaBusqueda = 'TODAS';
-
-  final List<String> _areas = [
-    'TODAS',
-    'TERMINADO',
-    'ENSAMBLE',
-    'DELANTERO',
-    'TRASERO',
-    'PARTES CHICAS',
-    'JOGGER QUIRURGICO',
-    'CHAMARRA',
-  ];
+  final List<String> _areas = ['TODAS', 'DELANTERO', 'ENSAMBLE'];
 
   final Map<String, Color> _coloresArea = {
-    'TERMINADO': const Color(0xFF0F3460),
-    'ENSAMBLE': const Color(0xFF533483),
     'DELANTERO': const Color(0xFF1B4332),
-    'TRASERO': const Color(0xFF7B2D8B),
-    'PARTES CHICAS': const Color(0xFF8B0000),
-    'JOGGER QUIRURGICO': const Color(0xFF2C5F2E),
-    'CHAMARRA': const Color(0xFF4A4A00),
+    'ENSAMBLE': const Color(0xFF533483),
   };
 
   @override

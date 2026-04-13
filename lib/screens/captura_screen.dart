@@ -24,43 +24,44 @@ class _CapturaScreenState extends State<CapturaScreen> {
     '6:30',
   ];
 
-  final List<String> _operaciones = [
-    'PEGAR OJALERA',
-    'PEGAR BOTONERA',
-    'S/COSER OJALERA',
-    'S/C BOTONERA',
-    'S/C FORRO',
-    'DISEÑO J',
-    'PEGAR FORRO',
-    'ENTRADA DE BOLSA',
-    'S/COSER FORRO NORMAL',
-    'APUNTAR BOLSA',
-    'ENGRAPAR',
-    'ENCUARTAR NORMAL',
-    'PEGAR ETIQUETA MONARCH',
-    'PRECILLAR SECRETA (2)',
-    'PARES',
-    'REVISAR DELANTERO',
-    'CERRAR ENTREPIERNA',
-    'CERRAR COSTADOS',
-    'S/C ENTREPIERNA',
-    'CERRAR COSTADOS',
-    'MARCAR COSTADOS',
-    'S/C COSTADOS',
-    'CERRAR COSTADOS',
-    'HABILITAR PRETINA',
-    'PRESILLAR ENTREPIERNA',
-    'PEGAR PRETINA NORMAL',
-    'PEGAR PRETINA NORMAL 2 AGUAS',
-    'HACER CUADRO',
-    'PRESILLAR COSTADOS Y ENTRADA DE BOLSA',
-    'PRESILLAR ENTRE BOLSA Y COSTADO',
-    'PEGAR TRABA',
-    'PRESILLAR ENTRE BOLSA Y COSTADO',
-    'PEGAR TRABA (5)',
-    'OJAL',
-    'HACER VALENCIANA',
-  ];
+  // Operaciones agrupadas por sección
+  final Map<String, List<String>> _operacionesPorArea = {
+    'DELANTERO': [
+      'PEGAR OJALERA',
+      'PEGAR BOTONERA',
+      'S/C OJALERA',
+      'S/COSER OJALERA',
+      'S/C BOTONERA',
+      'PEGAR FORRO',
+      'DISEÑO J',
+      'ENTRADA DE BOLSA',
+      'S/COSER FORRO NORMAL',
+      'APUNTAR BOLSA',
+      'ENGRAPAR',
+      'ENCUARTAR NORMAL',
+      'PEGAR ETIQUETA (2) MONARCH',
+      'PRESILLAR SECRETA',
+      'PEGAR ETQ. MONACH',
+      'PARES',
+    ],
+    'ENSAMBLE': [
+      'CERRAR ENTREPIERNA',
+      'CERRAR COSTADOS',
+      'S/C ENTREPIERNA',
+      'MARCAR COSTADOS',
+      'S/C COSTADOS',
+      'VALENCIANA 1/2", 3/8", 5/8"',
+      '2DA DE PRETINA',
+      'HABILITAR PRETINA',
+      'PEGAR PRETINA NORMAL 2 AGUJAS',
+      'HACER CUADRO',
+      'PRECILLAR COSTADOS',
+      'PEGAR TRABA',
+      'PEGAR TRABA (5)',
+      'OJAL',
+      'HACER VALENCIANA',
+    ],
+  };
 
   List<Operario> _operarios = [];
   List<OrdenCorte> _ordenes = [];
@@ -69,6 +70,15 @@ class _CapturaScreenState extends State<CapturaScreen> {
   String? _operacionSeleccionada;
   String _fechaHoy = '';
   final Map<String, TextEditingController> _controladoresPiezas = {};
+
+  // Área del operario seleccionado
+  String? get _areaOperario => _operarioSeleccionado?.area;
+
+  // Operaciones filtradas según área del operario
+  List<String> get _operacionesFiltradas {
+    if (_areaOperario == null) return [];
+    return _operacionesPorArea[_areaOperario] ?? [];
+  }
 
   @override
   void initState() {
@@ -95,6 +105,60 @@ class _CapturaScreenState extends State<CapturaScreen> {
       _operarios = operarios;
       _ordenes = ordenes;
     });
+  }
+
+  // Operarios agrupados por área para el dropdown
+  List<DropdownMenuItem<Operario>> _itemsOperarios() {
+    final items = <DropdownMenuItem<Operario>>[];
+    final areas = ['DELANTERO', 'ENSAMBLE'];
+
+    for (final area in areas) {
+      final operariosArea = _operarios.where((o) => o.area == area).toList();
+      if (operariosArea.isEmpty) continue;
+
+      // Encabezado de área (no seleccionable)
+      items.add(
+        DropdownMenuItem(
+          enabled: false,
+          value: null,
+          child: Text(
+            '── $area ──',
+            style: TextStyle(
+              color: area == 'DELANTERO'
+                  ? const Color(0xFF4CAF50)
+                  : const Color(0xFFAB47BC),
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
+          ),
+        ),
+      );
+
+      // Operarios del área
+      for (final op in operariosArea) {
+        items.add(
+          DropdownMenuItem(
+            value: op,
+            child: Text(op.nombre, style: const TextStyle(color: Colors.white)),
+          ),
+        );
+      }
+    }
+    return items;
+  }
+
+  // Operaciones agrupadas para el dropdown
+  List<DropdownMenuItem<String>> _itemsOperaciones() {
+    if (_areaOperario == null) return [];
+    final operaciones = _operacionesFiltradas;
+    return operaciones
+        .map(
+          (op) => DropdownMenuItem(
+            value: op,
+            child: Text(op, style: const TextStyle(color: Colors.white)),
+          ),
+        )
+        .toList();
   }
 
   int _totalPiezasIngresadas() {
@@ -125,14 +189,20 @@ class _CapturaScreenState extends State<CapturaScreen> {
       return;
     }
 
-    final capturadas = await DatabaseHelper.instance.piezasCapturadas(
-      _ordenSeleccionada!.id!,
-    );
-    final disponibles = _ordenSeleccionada!.totalPiezas - capturadas;
+    final capturadasEnEstaOperacion = await DatabaseHelper.instance
+        .piezasCapturadasPorOperacion(
+          _ordenSeleccionada!.id!,
+          _operacionSeleccionada!,
+        );
+
+    final disponibles =
+        _ordenSeleccionada!.totalPiezas - capturadasEnEstaOperacion;
 
     if (totalIngresado > disponibles) {
+      final exceso = totalIngresado - disponibles;
       _mostrarMensaje(
-        '🚫 Excede el límite. Solo quedan $disponibles piezas disponibles',
+        '🚫 Te estás pasando por $exceso piezas en "$_operacionSeleccionada". '
+        'Solo quedan $disponibles disponibles.',
       );
       return;
     }
@@ -217,7 +287,7 @@ class _CapturaScreenState extends State<CapturaScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Operario
+            // Operario agrupado por área
             const Text(
               'Operario',
               style: TextStyle(color: Colors.white70, fontSize: 14),
@@ -238,19 +308,35 @@ class _CapturaScreenState extends State<CapturaScreen> {
                 style: TextStyle(color: Colors.white54),
               ),
               value: _operarioSeleccionado,
-              items: _operarios.map((op) {
-                return DropdownMenuItem(value: op, child: Text(op.nombre));
-              }).toList(),
-              onChanged: (val) => setState(() => _operarioSeleccionado = val),
+              items: _itemsOperarios(),
+              onChanged: (val) => setState(() {
+                _operarioSeleccionado = val;
+                _operacionSeleccionada = null; // reset operación
+              }),
             ),
             const SizedBox(height: 16),
 
-            // Operación
+            // Operación filtrada por área del operario
             const Text(
               'Operación',
               style: TextStyle(color: Colors.white70, fontSize: 14),
             ),
             const SizedBox(height: 6),
+            if (_areaOperario != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                margin: const EdgeInsets.only(bottom: 6),
+                decoration: BoxDecoration(
+                  color: _areaOperario == 'DELANTERO'
+                      ? const Color(0xFF1B4332)
+                      : const Color(0xFF533483),
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Área: $_areaOperario',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12),
+                ),
+              ),
             DropdownButtonFormField<String>(
               dropdownColor: const Color(0xFF16213E),
               style: const TextStyle(color: Colors.white),
@@ -261,15 +347,17 @@ class _CapturaScreenState extends State<CapturaScreen> {
                   borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              hint: const Text(
-                'Selecciona operación',
-                style: TextStyle(color: Colors.white54),
+              hint: Text(
+                _areaOperario == null
+                    ? 'Primero selecciona un operario'
+                    : 'Selecciona operación',
+                style: const TextStyle(color: Colors.white54),
               ),
               value: _operacionSeleccionada,
-              items: _operaciones.map((op) {
-                return DropdownMenuItem(value: op, child: Text(op));
-              }).toList(),
-              onChanged: (val) => setState(() => _operacionSeleccionada = val),
+              items: _itemsOperaciones(),
+              onChanged: _areaOperario == null
+                  ? null
+                  : (val) => setState(() => _operacionSeleccionada = val),
             ),
             const SizedBox(height: 16),
 
@@ -297,17 +385,21 @@ class _CapturaScreenState extends State<CapturaScreen> {
               items: _ordenes.map((oc) {
                 return DropdownMenuItem(
                   value: oc,
-                  child: Text('${oc.numeroOC} — ${oc.estilo}'),
+                  child: Text(
+                    '${oc.numeroOC} — ${oc.estilo}',
+                    style: const TextStyle(color: Colors.white),
+                  ),
                 );
               }).toList(),
               onChanged: (val) => setState(() => _ordenSeleccionada = val),
             ),
 
             // Piezas disponibles
-            if (_ordenSeleccionada != null)
+            if (_ordenSeleccionada != null && _operacionSeleccionada != null)
               FutureBuilder<int>(
-                future: DatabaseHelper.instance.piezasCapturadas(
+                future: DatabaseHelper.instance.piezasCapturadasPorOperacion(
                   _ordenSeleccionada!.id!,
+                  _operacionSeleccionada!,
                 ),
                 builder: (context, snapshot) {
                   final capturadas = snapshot.data ?? 0;
@@ -320,20 +412,50 @@ class _CapturaScreenState extends State<CapturaScreen> {
                       color: const Color(0xFF0F3460),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          'Capturadas: $capturadas',
-                          style: const TextStyle(color: Colors.white70),
+                          'Operación: $_operacionSeleccionada',
+                          style: const TextStyle(
+                            color: Colors.white70,
+                            fontSize: 12,
+                          ),
                         ),
-                        Text(
-                          'Disponibles: $disponibles',
-                          style: TextStyle(
-                            color: disponibles <= 0
-                                ? Colors.redAccent
-                                : Colors.greenAccent,
-                            fontWeight: FontWeight.bold,
+                        const SizedBox(height: 6),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              'Capturadas: $capturadas',
+                              style: const TextStyle(color: Colors.white70),
+                            ),
+                            Text(
+                              'Disponibles: $disponibles',
+                              style: TextStyle(
+                                color: disponibles <= 0
+                                    ? Colors.redAccent
+                                    : Colors.greenAccent,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(4),
+                          child: LinearProgressIndicator(
+                            value: _ordenSeleccionada!.totalPiezas > 0
+                                ? (capturadas / _ordenSeleccionada!.totalPiezas)
+                                      .clamp(0.0, 1.0)
+                                : 0.0,
+                            minHeight: 8,
+                            backgroundColor: const Color(0xFF1A1A2E),
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              disponibles <= 0
+                                  ? Colors.redAccent
+                                  : Colors.greenAccent,
+                            ),
                           ),
                         ),
                       ],
