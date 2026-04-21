@@ -28,19 +28,27 @@ class _OrdenesScreenState extends State<OrdenesScreen> {
     setState(() => _ordenes = ordenes);
   }
 
-  Future<void> _mostrarDialogoAgregar() async {
-    _numeroOCCtrl.clear();
-    _estiloCtrl.clear();
-    _totalPiezasCtrl.clear();
-    _semanaCtrl.clear();
+  Future<void> _mostrarDialogo({OrdenCorte? orden}) async {
+    // Si es edición pre-llena los campos
+    if (orden != null) {
+      _numeroOCCtrl.text = orden.numeroOC;
+      _estiloCtrl.text = orden.estilo;
+      _totalPiezasCtrl.text = orden.totalPiezas.toString();
+      _semanaCtrl.text = orden.semana;
+    } else {
+      _numeroOCCtrl.clear();
+      _estiloCtrl.clear();
+      _totalPiezasCtrl.clear();
+      _semanaCtrl.clear();
+    }
 
     await showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF16213E),
-        title: const Text(
-          'Nueva Orden de Corte',
-          style: TextStyle(color: Colors.white),
+        title: Text(
+          orden == null ? 'Nueva Orden de Corte' : 'Editar Orden de Corte',
+          style: const TextStyle(color: Colors.white),
         ),
         content: SingleChildScrollView(
           child: Column(
@@ -48,13 +56,17 @@ class _OrdenesScreenState extends State<OrdenesScreen> {
             children: [
               _campo(_numeroOCCtrl, 'Número O/C', TextInputType.text),
               const SizedBox(height: 10),
-              _campo(_estiloCtrl, 'Estilo', TextInputType.text),
+              _campo(
+                _estiloCtrl,
+                'Cliente (ej: OGGI, FRAME)',
+                TextInputType.text,
+              ),
               const SizedBox(height: 10),
               _campo(_totalPiezasCtrl, 'Total de piezas', TextInputType.number),
               const SizedBox(height: 10),
               _campo(
                 _semanaCtrl,
-                'Semana (ej: 18-24 Marzo)',
+                'Semana (ej: 18-24 MARZO)',
                 TextInputType.text,
               ),
             ],
@@ -76,16 +88,23 @@ class _OrdenesScreenState extends State<OrdenesScreen> {
               if (_numeroOCCtrl.text.isEmpty ||
                   _estiloCtrl.text.isEmpty ||
                   _totalPiezasCtrl.text.isEmpty ||
-                  _semanaCtrl.text.isEmpty) {
+                  _semanaCtrl.text.isEmpty)
                 return;
-              }
-              final orden = OrdenCorte(
+
+              final nuevaOrden = OrdenCorte(
+                id: orden?.id,
                 numeroOC: _numeroOCCtrl.text.trim(),
                 estilo: _estiloCtrl.text.trim(),
                 totalPiezas: int.tryParse(_totalPiezasCtrl.text) ?? 0,
                 semana: _semanaCtrl.text.trim(),
               );
-              await DatabaseHelper.instance.insertarOrden(orden);
+
+              if (orden == null) {
+                await DatabaseHelper.instance.insertarOrden(nuevaOrden);
+              } else {
+                await DatabaseHelper.instance.actualizarOrden(nuevaOrden);
+              }
+
               if (ctx.mounted) Navigator.pop(ctx);
               await _cargarOrdenes();
             },
@@ -172,7 +191,7 @@ class _OrdenesScreenState extends State<OrdenesScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: const Color(0xFF533483),
-        onPressed: _mostrarDialogoAgregar,
+        onPressed: () => _mostrarDialogo(),
         child: const Icon(Icons.add, color: Colors.white),
       ),
       body: _ordenes.isEmpty
@@ -210,31 +229,36 @@ class _OrdenesScreenState extends State<OrdenesScreen> {
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'O/C: ${oc.numeroOC}',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
+                                Expanded(
+                                  child: Text(
+                                    'O/C: ${oc.numeroOC} — ${oc.estilo}',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 15,
+                                    ),
                                   ),
                                 ),
+                                // Botón editar
+                                IconButton(
+                                  icon: const Icon(
+                                    Icons.edit,
+                                    color: Colors.white54,
+                                    size: 20,
+                                  ),
+                                  onPressed: () => _mostrarDialogo(orden: oc),
+                                ),
+                                // Botón eliminar
                                 IconButton(
                                   icon: const Icon(
                                     Icons.delete,
                                     color: Colors.redAccent,
+                                    size: 20,
                                   ),
                                   onPressed: () => _eliminarOrden(oc.id!),
                                 ),
                               ],
                             ),
-                            Text(
-                              oc.estilo,
-                              style: const TextStyle(
-                                color: Colors.white70,
-                                fontSize: 13,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
                             Text(
                               'Semana: ${oc.semana}',
                               style: const TextStyle(

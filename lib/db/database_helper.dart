@@ -95,19 +95,17 @@ class DatabaseHelper {
       // ENSAMBLE
       {'nombre': 'FLORENCIO', 'area': 'ENSAMBLE'},
       {'nombre': 'OSCAR DEL ROQUE', 'area': 'ENSAMBLE'},
-      {'nombre': 'JOSE LUIS AQUINO', 'area': 'ENSAMBLE'},
-      {'nombre': 'JONATHAN', 'area': 'ENSAMBLE'},
+      {'nombre': 'JONATHAN (ENS)', 'area': 'ENSAMBLE'},
       {'nombre': 'ZENON', 'area': 'ENSAMBLE'},
       {'nombre': 'MANUEL REYES', 'area': 'ENSAMBLE'},
       {'nombre': 'MONSERRAT DEL ROQUE', 'area': 'ENSAMBLE'},
       {'nombre': 'OLGA', 'area': 'ENSAMBLE'},
-      {'nombre': 'CARLOS ALBERTO', 'area': 'ENSAMBLE'},
       {'nombre': 'TIMOTEO', 'area': 'ENSAMBLE'},
       {'nombre': 'DANIEL', 'area': 'ENSAMBLE'},
       {'nombre': 'ELEAZAR', 'area': 'ENSAMBLE'},
       {'nombre': 'ERASMO', 'area': 'ENSAMBLE'},
       {'nombre': 'VICTOR', 'area': 'ENSAMBLE'},
-      {'nombre': 'VICENTE', 'area': 'ENSAMBLE'},
+      {'nombre': 'VICENTE (ENS)', 'area': 'ENSAMBLE'},
       {'nombre': 'FABIOLA MARTIN', 'area': 'ENSAMBLE'},
       {'nombre': 'JACQUELINE', 'area': 'ENSAMBLE'},
       {'nombre': 'AMBROSIO', 'area': 'ENSAMBLE'},
@@ -282,7 +280,10 @@ class DatabaseHelper {
 
   Future<List<Operario>> obtenerOperarios() async {
     final db = await database;
-    final maps = await db.query('operarios', orderBy: 'area ASC, nombre ASC');
+    final maps = await db.query(
+      'operarios',
+      orderBy: 'id ASC',
+    ); // ← cambiar ASC por id
     return maps.map((m) => Operario.fromMap(m)).toList();
   }
 
@@ -368,6 +369,16 @@ class DatabaseHelper {
       'rol': usuario.rol,
       'password_hash': _hashPassword(password),
     });
+  }
+
+  Future<int> actualizarOrden(OrdenCorte orden) async {
+    final db = await database;
+    return await db.update(
+      'ordenes_corte',
+      orden.toMap(),
+      where: 'id = ?',
+      whereArgs: [orden.id],
+    );
   }
 
   Future<int> eliminarUsuario(int id) async {
