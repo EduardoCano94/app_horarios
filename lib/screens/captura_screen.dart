@@ -165,9 +165,16 @@ class _CapturaScreenState extends State<CapturaScreen> {
   Future<void> _cargarDatos() async {
     final operarios = await DatabaseHelper.instance.obtenerOperarios();
     final ordenes = await DatabaseHelper.instance.obtenerOrdenes();
+    final opsDelantero = await DatabaseHelper.instance
+        .obtenerOperacionesPorArea('DELANTERO');
+    final opsEnsamble = await DatabaseHelper.instance.obtenerOperacionesPorArea(
+      'ENSAMBLE',
+    );
     setState(() {
       _operarios = operarios;
       _ordenes = ordenes;
+      _operacionesPorArea['DELANTERO'] = opsDelantero;
+      _operacionesPorArea['ENSAMBLE'] = opsEnsamble;
     });
   }
 

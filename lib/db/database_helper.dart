@@ -202,6 +202,56 @@ class DatabaseHelper {
       },
     ];
 
+    await db.execute('''
+  CREATE TABLE operaciones (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    nombre TEXT NOT NULL,
+    area TEXT NOT NULL DEFAULT 'AMBAS'
+  )
+''');
+
+    // Operaciones iniciales
+    final operacionesIniciales = [
+      // DELANTERO
+      {'nombre': 'PEGAR OJALERA', 'area': 'DELANTERO'},
+      {'nombre': 'PEGAR BOTONERA', 'area': 'DELANTERO'},
+      {'nombre': 'S/C OJALERA', 'area': 'DELANTERO'},
+      {'nombre': 'S/C BOTONERA', 'area': 'DELANTERO'},
+      {'nombre': 'PEGAR FORRO', 'area': 'DELANTERO'},
+      {'nombre': 'CERRAR FORRO', 'area': 'DELANTERO'},
+      {'nombre': 'DISEÑO J', 'area': 'DELANTERO'},
+      {'nombre': 'ENTRADA DE BOLSA', 'area': 'DELANTERO'},
+      {'nombre': 'S/COSER FORRO NORMAL', 'area': 'DELANTERO'},
+      {'nombre': 'APUNTAR BOLSA', 'area': 'DELANTERO'},
+      {'nombre': 'ENGRAPAR', 'area': 'DELANTERO'},
+      {'nombre': 'ENCUARTAR NORMAL', 'area': 'DELANTERO'},
+      {'nombre': 'PEGAR ETIQUETA (2) MONARCH', 'area': 'DELANTERO'},
+      {'nombre': 'PRESILLAR DELANTERO', 'area': 'DELANTERO'},
+      {'nombre': 'PEGAR ETQ. MONACH', 'area': 'DELANTERO'},
+      {'nombre': 'PARES', 'area': 'DELANTERO'},
+      {'nombre': 'DESHEBRAR DEL', 'area': 'DELANTERO'},
+      // ENSAMBLE
+      {'nombre': 'CERRAR ENTREPIERNA', 'area': 'ENSAMBLE'},
+      {'nombre': 'CERRAR COSTADOS', 'area': 'ENSAMBLE'},
+      {'nombre': 'S/C ENTREPIERNA', 'area': 'ENSAMBLE'},
+      {'nombre': 'MARCAR COSTADOS', 'area': 'ENSAMBLE'},
+      {'nombre': 'S/C COSTADOS', 'area': 'ENSAMBLE'},
+      {'nombre': 'VALENCIANA', 'area': 'ENSAMBLE'},
+      {'nombre': '2DA DE PRETINA', 'area': 'ENSAMBLE'},
+      {'nombre': 'HABILITAR PRETINA', 'area': 'ENSAMBLE'},
+      {'nombre': 'PEGAR PRETINA NORMAL 2 AGUJAS', 'area': 'ENSAMBLE'},
+      {'nombre': 'HACER CUADRO', 'area': 'ENSAMBLE'},
+      {'nombre': 'PRESILLAR COSTADOS', 'area': 'ENSAMBLE'},
+      {'nombre': 'PRESILLAR ENTR. DE BOLSA', 'area': 'ENSAMBLE'},
+      {'nombre': 'PEGAR TRABA', 'area': 'ENSAMBLE'},
+      {'nombre': 'OJAL', 'area': 'ENSAMBLE'},
+      {'nombre': 'HACER VALENCIANA', 'area': 'ENSAMBLE'},
+    ];
+
+    for (final op in operacionesIniciales) {
+      await db.insert('operaciones', op);
+    }
+
     final usuariosIniciales = [
       {
         'nombre': 'Dueño',
@@ -270,6 +320,43 @@ class DatabaseHelper {
     final db = await database;
     final maps = await db.query('usuarios');
     return maps.map((m) => Usuario.fromMap(m)).toList();
+  }
+
+  // ── OPERACIONES ────────────────────────────────────────
+  Future<List<Map<String, dynamic>>> obtenerOperaciones() async {
+    final db = await database;
+    return await db.query('operaciones', orderBy: 'area ASC, nombre ASC');
+  }
+
+  Future<List<String>> obtenerOperacionesPorArea(String area) async {
+    final db = await database;
+    final maps = await db.query(
+      'operaciones',
+      where: 'area = ? OR area = ?',
+      whereArgs: [area, 'AMBAS'],
+      orderBy: 'nombre ASC',
+    );
+    return maps.map((m) => m['nombre'] as String).toList();
+  }
+
+  Future<int> insertarOperacion(String nombre, String area) async {
+    final db = await database;
+    return await db.insert('operaciones', {'nombre': nombre, 'area': area});
+  }
+
+  Future<int> actualizarOperacion(int id, String nombre, String area) async {
+    final db = await database;
+    return await db.update(
+      'operaciones',
+      {'nombre': nombre, 'area': area},
+      where: 'id = ?',
+      whereArgs: [id],
+    );
+  }
+
+  Future<int> eliminarOperacion(int id) async {
+    final db = await database;
+    return await db.delete('operaciones', where: 'id = ?', whereArgs: [id]);
   }
 
   // ── OPERARIOS ──────────────────────────────────────────

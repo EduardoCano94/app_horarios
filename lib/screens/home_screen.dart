@@ -6,6 +6,8 @@ import 'reportes_screen.dart';
 import 'exportar_screen.dart';
 import 'login_screen.dart';
 import 'usuarios_screen.dart';
+import 'operaciones_screen.dart';
+import 'scanner_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final String rol;
@@ -160,6 +162,37 @@ class HomeScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const ExportarScreen()),
               ),
             ),
+            // Agrega este bloque en el body:
+            if (rol == 'ENCARGADO' || rol == 'DUEÑO') ...[
+              const SizedBox(height: 16),
+              _botonMenu(
+                context,
+                icono: Icons.build,
+                texto: 'Operaciones',
+                subtexto: 'Agregar, editar y eliminar operaciones',
+                color: const Color(0xFF0F3460),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const OperacionesScreen()),
+                ),
+              ),
+            ],
+
+            // Solo encargado
+            if (rol == 'ENCARGADO') ...[
+              const SizedBox(height: 16),
+              _botonMenu(
+                context,
+                icono: Icons.document_scanner,
+                texto: 'Escanear Programa',
+                subtexto: 'Leer O/C desde foto del programa',
+                color: const Color(0xFF7B2D8B),
+                onTap: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const ScannerScreen()),
+                ),
+              ),
+            ],
             const SizedBox(height: 20),
           ],
         ),
