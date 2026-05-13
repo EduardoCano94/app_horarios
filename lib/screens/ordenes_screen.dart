@@ -268,30 +268,40 @@ class _OrdenesScreenState extends State<OrdenesScreen> {
                             ),
                             const SizedBox(height: 10),
                             Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  'Total: ${oc.totalPiezas} pzas',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                                Expanded(
+                                  child: Text(
+                                    'Total: ${oc.totalPiezas} pzas',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Text(
-                                  'Capturadas: $capturadas',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 12,
+                                Expanded(
+                                  child: Text(
+                                    'Capturadas: $capturadas',
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 12,
+                                    ),
+                                    textAlign: TextAlign.center,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
-                                Text(
-                                  'Disponibles: $disponibles',
-                                  style: TextStyle(
-                                    color: disponibles <= 0
-                                        ? Colors.redAccent
-                                        : Colors.greenAccent,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                                Expanded(
+                                  child: Text(
+                                    'Disponibles: $disponibles',
+                                    style: TextStyle(
+                                      color: disponibles <= 0
+                                          ? Colors.redAccent
+                                          : Colors.greenAccent,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    textAlign: TextAlign.end,
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ],

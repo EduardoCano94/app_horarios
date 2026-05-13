@@ -838,23 +838,35 @@ class _CapturaScreenState extends State<CapturaScreen> {
               child: Column(
                 children: [
                   // Barra de progreso de horas
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_horario.length, (i) {
-                      return Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: 28,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: i < _horaActualIndex
-                              ? Colors.greenAccent
-                              : i == _horaActualIndex
-                              ? const Color(0xFF533483)
-                              : Colors.white24,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
+                  // Barra de progreso de horas
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final totalItems = _horario.length;
+                      final spacing = 4.0;
+                      final itemWidth =
+                          (constraints.maxWidth -
+                              (spacing * (totalItems - 1))) /
+                          totalItems;
+                      return Row(
+                        children: List.generate(totalItems, (i) {
+                          return Container(
+                            margin: EdgeInsets.only(
+                              right: i < totalItems - 1 ? spacing : 0,
+                            ),
+                            width: itemWidth,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: i < _horaActualIndex
+                                  ? Colors.greenAccent
+                                  : i == _horaActualIndex
+                                  ? const Color(0xFF533483)
+                                  : Colors.white24,
+                              borderRadius: BorderRadius.circular(3),
+                            ),
+                          );
+                        }),
                       );
-                    }),
+                    },
                   ),
                   const SizedBox(height: 16),
                   Text(

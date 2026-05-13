@@ -282,17 +282,24 @@ class _ReportesScreenState extends State<ReportesScreen> {
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               // Piezas destacadas
                               Container(
                                 width: 56,
-                                height: 56,
+                                constraints: const BoxConstraints(
+                                  minHeight: 56,
+                                ),
                                 decoration: BoxDecoration(
                                   color: const Color(0xFF533483),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                ),
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
                                   children: [
                                     Text(
                                       '${r.piezas}',
@@ -325,6 +332,7 @@ class _ReportesScreenState extends State<ReportesScreen> {
                                         fontWeight: FontWeight.bold,
                                         fontSize: 14,
                                       ),
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                     const SizedBox(height: 2),
                                     Text(
@@ -332,6 +340,16 @@ class _ReportesScreenState extends State<ReportesScreen> {
                                       style: const TextStyle(
                                         color: Colors.white70,
                                         fontSize: 12,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    const SizedBox(height: 2),
+                                    // ← FECHA AQUÍ ADENTRO
+                                    Text(
+                                      r.fecha,
+                                      style: const TextStyle(
+                                        color: Colors.white54,
+                                        fontSize: 11,
                                       ),
                                     ),
                                     const SizedBox(height: 2),
@@ -343,11 +361,14 @@ class _ReportesScreenState extends State<ReportesScreen> {
                                           size: 12,
                                         ),
                                         const SizedBox(width: 4),
-                                        Text(
-                                          'O/C: ${_numeroOC(r.ordenCorteId)}',
-                                          style: const TextStyle(
-                                            color: Colors.white38,
-                                            fontSize: 11,
+                                        Flexible(
+                                          child: Text(
+                                            'O/C: ${_numeroOC(r.ordenCorteId)}',
+                                            style: const TextStyle(
+                                              color: Colors.white38,
+                                              fontSize: 11,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         const SizedBox(width: 12),
@@ -367,14 +388,6 @@ class _ReportesScreenState extends State<ReportesScreen> {
                                       ],
                                     ),
                                   ],
-                                ),
-                              ),
-                              // Fecha
-                              Text(
-                                r.fecha,
-                                style: const TextStyle(
-                                  color: Colors.white38,
-                                  fontSize: 11,
                                 ),
                               ),
                             ],
