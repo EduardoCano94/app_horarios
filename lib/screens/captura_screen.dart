@@ -3,6 +3,7 @@ import '../db/database_helper.dart';
 import '../models/operario.dart';
 import '../models/orden_corte.dart';
 import '../models/registro.dart';
+import 'package:flutter/services.dart';
 
 class CapturaScreen extends StatefulWidget {
   const CapturaScreen({super.key});
@@ -540,6 +541,10 @@ class _CapturaScreenState extends State<CapturaScreen> {
     }
 
     final piezas = int.tryParse(_piezasCtrl.text) ?? 0;
+    if (piezas < 0) {
+      _mostrarMensaje('⚠️ No se permiten cantidades negativas');
+      return;
+    }
 
     if (piezas == 0) {
       final confirmar = await showDialog<bool>(
@@ -890,7 +895,11 @@ class _CapturaScreenState extends State<CapturaScreen> {
                   // Campo piezas
                   TextField(
                     controller: _piezasCtrl,
-                    keyboardType: TextInputType.number,
+                    keyboardType: TextInputType.number, // ← cambia a esto
+                    inputFormatters: [
+                      FilteringTextInputFormatter
+                          .digitsOnly, // ← solo dígitos, sin negativo
+                    ],
                     textAlign: TextAlign.center,
                     style: const TextStyle(
                       color: Colors.white,

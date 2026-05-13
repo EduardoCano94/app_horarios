@@ -7,7 +7,6 @@ import 'exportar_screen.dart';
 import 'login_screen.dart';
 import 'usuarios_screen.dart';
 import 'operaciones_screen.dart';
-import 'scanner_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   final String rol;
@@ -177,23 +176,6 @@ class HomeScreen extends StatelessWidget {
                 ),
               ),
             ],
-
-            // Solo encargado
-            if (rol == 'ENCARGADO') ...[
-              const SizedBox(height: 16),
-              _botonMenu(
-                context,
-                icono: Icons.document_scanner,
-                texto: 'Escanear Programa',
-                subtexto: 'Leer O/C desde foto del programa',
-                color: const Color(0xFF7B2D8B),
-                onTap: () => Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const ScannerScreen()),
-                ),
-              ),
-            ],
-            const SizedBox(height: 20),
           ],
         ),
       ),
@@ -234,25 +216,37 @@ class HomeScreen extends StatelessWidget {
           children: [
             Icon(icono, color: Colors.white, size: 36),
             const SizedBox(width: 16),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  texto,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
+            Expanded(
+              // ← ESTE ES EL FIX CLAVE
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    texto,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    overflow:
+                        TextOverflow.ellipsis, // ← por si el texto es largo
+                    maxLines: 1,
                   ),
-                ),
-                Text(
-                  subtexto,
-                  style: const TextStyle(color: Colors.white70, fontSize: 13),
-                ),
-              ],
+                  Text(
+                    subtexto,
+                    style: const TextStyle(color: Colors.white70, fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
+                  ),
+                ],
+              ),
             ),
-            const Spacer(),
-            const Icon(Icons.arrow_forward_ios, color: Colors.white54),
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.arrow_forward_ios,
+              color: Colors.white54,
+              size: 18,
+            ),
           ],
         ),
       ),
